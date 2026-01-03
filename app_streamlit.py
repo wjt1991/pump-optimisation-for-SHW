@@ -663,20 +663,23 @@ def create_schedule_chart(df_price, u_sol, current_time=None):
 # ============== Streamlit Main App ==============
 
 def main():
-    # Logos in top-right corner using absolute positioning
+    # Logos in top-right corner using fixed positioning
     st.markdown("""
     <style>
         .logo-container {
-            position: fixed;
-            top: 60px;
-            right: 20px;
-            display: flex;
-            gap: 15px;
-            z-index: 1000;
+            position: fixed !important;
+            top: 14px !important;
+            right: 60px !important;
+            display: flex !important;
+            gap: 15px !important;
+            z-index: 999999 !important;
+            background: white;
+            padding: 5px 10px;
+            border-radius: 8px;
         }
         .logo-container img {
-            height: 100px;
-            width: auto;
+            height: 60px !important;
+            width: auto !important;
         }
     </style>
     """, unsafe_allow_html=True)
