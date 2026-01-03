@@ -16,6 +16,14 @@ import io
 import zipfile
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+from zoneinfo import ZoneInfo
+
+# Australia/Sydney timezone (AEST/AEDT)
+SYDNEY_TZ = ZoneInfo("Australia/Sydney")
+
+def get_sydney_now():
+    """Get current time in Sydney timezone"""
+    return datetime.now(SYDNEY_TZ)
 
 # Page config
 st.set_page_config(
@@ -276,7 +284,9 @@ def fetch_combined_aemo_data(log_callback=None):
         if log_callback:
             log_callback(msg)
     
-    now = datetime.now()
+    now = get_sydney_now()
+    # Remove timezone info for comparison with AEMO data (which is timezone-naive but in AEST/AEDT)
+    now_naive = now.replace(tzinfo=None)
     log(f"Current time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
     
     # Get latest forecast
@@ -299,13 +309,13 @@ def fetch_combined_aemo_data(log_callback=None):
     
     df_combined = df_combined.sort_values('DateTime').reset_index(drop=True)
     
-    # Mark type
+    # Mark type (use timezone-naive now for comparison)
     df_combined['Type'] = df_combined['DateTime'].apply(
-        lambda x: 'historical' if x < now else 'forecast'
+        lambda x: 'historical' if x < now_naive else 'forecast'
     )
     
     # Keep only today and tomorrow
-    today = now.date()
+    today = now_naive.date()
     tomorrow = today + timedelta(days=1)
     df_combined['Date'] = df_combined['DateTime'].dt.date
     df_two_days = df_combined[df_combined['Date'].isin([today, tomorrow])].copy()
@@ -323,7 +333,7 @@ def fetch_combined_aemo_data(log_callback=None):
     log(f"  Forecast: {forecast_count} records")
     log(f"  Time range: {df_two_days['DateTime'].min()} ~ {df_two_days['DateTime'].max()}")
     
-    return df_two_days[['DateTime', 'Price', 'Type']], now
+    return df_two_days[['DateTime', 'Price', 'Type']], now_naive
 
 
 # ============== Optimization Function ==============
