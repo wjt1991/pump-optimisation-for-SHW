@@ -489,6 +489,53 @@ def run_optimization(df_price, params, daily_targets, log_callback=None):
     
     log(f"Total {len(day_mapping)} days of data")
     
+    # Check each day's data coverage and remove incomplete days
+    daily_min_steps = int(daily_min_hours * 60 / time_step_min)
+    min_on_steps = int(min_on_hours * 60 / time_step_min)
+    
+    # Calculate minimum required steps per day (considering constraints)
+    # Need at least: daily_min_steps OR enough time to run min_on_hours
+    min_required_steps = max(daily_min_steps, min_on_steps)
+    min_required_hours = min_required_steps * time_step_hr
+    
+    days_to_remove = []
+    for date, timesteps in day_mapping.items():
+        available_hours = len(timesteps) * time_step_hr
+        
+        # Count restricted slots for this day (4PM-8PM on weekdays)
+        restricted_count = 0
+        for t in timesteps:
+            dt = df_price['DateTime'].iloc[t]
+            if dt.weekday() < 5 and 16 <= dt.hour < 20:
+                restricted_count += 1
+        
+        usable_slots = len(timesteps) - restricted_count
+        usable_hours = usable_slots * time_step_hr
+        
+        # Check if this day has enough usable time
+        if usable_hours < daily_min_hours:
+            log(f"⚠ Removing {date}: Only {available_hours:.1f}h data ({usable_hours:.1f}h usable), need {daily_min_hours:.1f}h minimum")
+            days_to_remove.append(date)
+    
+    # Remove incomplete days from data
+    if days_to_remove:
+        log(f"Removing {len(days_to_remove)} incomplete day(s) from optimization")
+        df_price = df_price[~df_price['Date'].isin(days_to_remove)].reset_index(drop=True)
+        
+        if len(df_price) == 0:
+            raise Exception("No complete days available for optimization. Please try again later when more forecast data is available.")
+        
+        # Rebuild T and day_mapping
+        T = len(df_price)
+        day_mapping = {}
+        for t in range(T):
+            date = df_price['Date'].iloc[t]
+            if date not in day_mapping:
+                day_mapping[date] = []
+            day_mapping[date].append(t)
+        
+        log(f"Remaining: {len(day_mapping)} day(s), {T} time steps ({T * time_step_hr:.1f}h)")
+    
     # Restricted time slots (4PM-8PM on weekdays)
     restricted_slots = []
     for t in range(T):
@@ -521,9 +568,7 @@ def run_optimization(df_price, params, daily_targets, log_callback=None):
     for t in restricted_slots:
         model += u[t] == 0
     
-    # Minimum continuous run time
-    min_on_steps = int(min_on_hours * 60 / time_step_min)
-    
+    # Minimum continuous run time constraint
     for t in range(max(0, T - min_on_steps + 1), T):
         model += v[t] == 0
     
@@ -532,8 +577,6 @@ def run_optimization(df_price, params, daily_targets, log_callback=None):
             model += u[t + i] >= v[t]
     
     # Daily constraints
-    daily_min_steps = int(daily_min_hours * 60 / time_step_min)
-    
     for date, timesteps in day_mapping.items():
         # Get target for this specific day
         date_str = date.strftime('%Y-%m-%d')
