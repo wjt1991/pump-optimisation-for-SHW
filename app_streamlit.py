@@ -187,12 +187,12 @@ def parse_predispatch_filename(filename):
     return None
 
 
-def fetch_aemo_earlier_predispatch(target_time, log_callback=None):
+def fetch_aemo_earlier_predispatch(today_start, current_time, log_callback=None):
     """Fetch earlier PreDispatch data that contains today's full forecast
     
     Args:
-        target_time: datetime - we need a file that was published BEFORE this time
-                     but contains forecast data covering this time
+        today_start: datetime - start of today (00:00)
+        current_time: datetime - current time (we need to fill the gap from today_start to current_time)
     """
     def log(msg):
         if log_callback:
@@ -232,31 +232,51 @@ def fetch_aemo_earlier_predispatch(target_time, log_callback=None):
         log(f"  Earliest: {file_info[0]['target_time']}")
         log(f"  Latest: {file_info[-1]['target_time']}")
         
-        # Find a file that:
-        # 1. Has target_time at least 20 hours before our target (to have enough historical coverage)
-        # 2. But not too old (within last 48 hours)
+        # Strategy: We need a file whose forecast covers from today_start to current_time
+        # Each file contains ~40 hours of forecast from its target_time
+        # So we need: file_target_time + 40h > current_time
+        # AND: file_target_time <= today_start (to cover from today's beginning)
         
-        ideal_file_time = target_time - timedelta(hours=20)
-        min_acceptable_time = target_time - timedelta(hours=48)
+        # Ideal: find a file with target_time just before today_start (e.g., yesterday 23:30)
+        # This file would forecast from yesterday 23:30 to day-after-tomorrow ~15:30
         
-        # Find the best matching file
-        best_file = None
+        log(f"  Looking for file to cover: {today_start} ~ {current_time}")
+        
+        # Find files that can cover current_time (target_time + 40h > current_time)
+        # AND have target_time before or near today_start
+        candidates = []
         for info in file_info:
-            if min_acceptable_time <= info['target_time'] <= ideal_file_time:
-                # Prefer the one closest to ideal_file_time
-                if best_file is None or info['target_time'] > best_file['target_time']:
-                    best_file = info
+            forecast_end = info['target_time'] + timedelta(hours=40)
+            # Must cover current_time
+            if forecast_end > current_time:
+                # Prefer files with target_time close to but before today_start
+                gap_to_today = (today_start - info['target_time']).total_seconds() / 3600
+                if -2 <= gap_to_today <= 24:  # target_time within 24h before or 2h after today_start
+                    candidates.append({
+                        **info,
+                        'gap_hours': gap_to_today,
+                        'forecast_end': forecast_end
+                    })
         
-        # If no ideal file found, try to find any earlier file
-        if best_file is None:
+        if not candidates:
+            # Fallback: any file that can reach current_time
+            log("  No ideal candidate, trying fallback...")
             for info in file_info:
-                if info['target_time'] < target_time - timedelta(hours=12):
-                    if best_file is None or info['target_time'] > best_file['target_time']:
-                        best_file = info
+                forecast_end = info['target_time'] + timedelta(hours=40)
+                if forecast_end > current_time and info['target_time'] < current_time:
+                    candidates.append({
+                        **info,
+                        'gap_hours': (today_start - info['target_time']).total_seconds() / 3600,
+                        'forecast_end': forecast_end
+                    })
         
-        if best_file is None:
+        if not candidates:
             log("Could not find suitable historical file")
             return None
+        
+        # Sort by gap_hours: prefer files with target_time just before today_start (gap ~0-2h)
+        candidates.sort(key=lambda x: abs(x['gap_hours'] - 1))  # Prefer ~1 hour before today
+        best_file = candidates[0]
         
         earlier_zip = best_file['href']
         if earlier_zip.startswith('/'):
@@ -266,6 +286,7 @@ def fetch_aemo_earlier_predispatch(target_time, log_callback=None):
         
         log(f"Selected: {best_file['filename']}")
         log(f"  Target time: {best_file['target_time']}")
+        log(f"  Forecast covers until: ~{best_file['forecast_end']}")
         
         zip_response = requests.get(zip_url, timeout=60)
         zip_response.raise_for_status()
@@ -369,9 +390,9 @@ def fetch_combined_aemo_data(log_callback=None):
     df_earlier = None
     if needs_historical:
         log("\n[2/2] Fetching historical forecast data...")
-        log(f"  Need data from: {today_start}")
-        # Target: find a file that covers today's start
-        df_earlier = fetch_aemo_earlier_predispatch(today_start, log_callback)
+        log(f"  Need to fill gap: {today_start} ~ {now_naive}")
+        # Target: find a file that covers from today's start to now
+        df_earlier = fetch_aemo_earlier_predispatch(today_start, now_naive, log_callback)
     else:
         log("\n[2/2] Latest file already covers today's start - skipping historical fetch")
     
