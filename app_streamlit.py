@@ -171,8 +171,29 @@ def fetch_aemo_predispatch(log_callback=None):
         return None
 
 
-def fetch_aemo_earlier_predispatch(log_callback=None):
-    """Fetch earlier PreDispatch data (for historical periods)"""
+def parse_predispatch_filename(filename):
+    """Parse timestamp from PredispatchIS filename
+    Format: PUBLIC_PREDISPATCHIS_YYYYMMDDHHMM_YYYYMMDDHHmmss.zip
+    Returns the target datetime (first timestamp)
+    """
+    import re
+    match = re.search(r'PREDISPATCHIS_(\d{12})_', filename)
+    if match:
+        timestamp_str = match.group(1)
+        try:
+            return datetime.strptime(timestamp_str, '%Y%m%d%H%M')
+        except:
+            return None
+    return None
+
+
+def fetch_aemo_earlier_predispatch(target_time, log_callback=None):
+    """Fetch earlier PreDispatch data that contains today's full forecast
+    
+    Args:
+        target_time: datetime - we need a file that was published BEFORE this time
+                     but contains forecast data covering this time
+    """
     def log(msg):
         if log_callback:
             log_callback(msg)
@@ -186,25 +207,65 @@ def fetch_aemo_earlier_predispatch(log_callback=None):
         soup = BeautifulSoup(response.text, 'html.parser')
         links = soup.find_all('a', href=True)
         
-        zip_links = []
+        # Parse all files with their timestamps
+        file_info = []
         for link in links:
             href = link['href']
             if href.endswith('.zip') and 'PREDISPATCHIS' in href.upper():
-                zip_links.append(href)
+                filename = href.split('/')[-1]
+                file_time = parse_predispatch_filename(filename)
+                if file_time:
+                    file_info.append({
+                        'href': href,
+                        'filename': filename,
+                        'target_time': file_time
+                    })
         
-        if len(zip_links) < 2:
+        if len(file_info) < 2:
+            log("Not enough files available")
             return None
         
-        # Get file from ~24 hours ago
-        target_index = max(0, len(zip_links) - 48)
-        earlier_zip = zip_links[target_index]
+        # Sort by target time
+        file_info.sort(key=lambda x: x['target_time'])
         
+        log(f"Found {len(file_info)} files on server")
+        log(f"  Earliest: {file_info[0]['target_time']}")
+        log(f"  Latest: {file_info[-1]['target_time']}")
+        
+        # Find a file that:
+        # 1. Has target_time at least 20 hours before our target (to have enough historical coverage)
+        # 2. But not too old (within last 48 hours)
+        
+        ideal_file_time = target_time - timedelta(hours=20)
+        min_acceptable_time = target_time - timedelta(hours=48)
+        
+        # Find the best matching file
+        best_file = None
+        for info in file_info:
+            if min_acceptable_time <= info['target_time'] <= ideal_file_time:
+                # Prefer the one closest to ideal_file_time
+                if best_file is None or info['target_time'] > best_file['target_time']:
+                    best_file = info
+        
+        # If no ideal file found, try to find any earlier file
+        if best_file is None:
+            for info in file_info:
+                if info['target_time'] < target_time - timedelta(hours=12):
+                    if best_file is None or info['target_time'] > best_file['target_time']:
+                        best_file = info
+        
+        if best_file is None:
+            log("Could not find suitable historical file")
+            return None
+        
+        earlier_zip = best_file['href']
         if earlier_zip.startswith('/'):
             zip_url = 'https://nemweb.com.au' + earlier_zip
         else:
             zip_url = url + earlier_zip
         
-        log(f"Fetching historical file: {earlier_zip.split('/')[-1]}")
+        log(f"Selected: {best_file['filename']}")
+        log(f"  Target time: {best_file['target_time']}")
         
         zip_response = requests.get(zip_url, timeout=60)
         zip_response.raise_for_status()
@@ -270,7 +331,8 @@ def fetch_aemo_earlier_predispatch(log_callback=None):
         df = pd.DataFrame(data_rows)
         df = df.sort_values('DateTime').reset_index(drop=True)
         
-        log(f"Fetched {len(df)} historical records")
+        log(f"Fetched {len(df)} records from historical file")
+        log(f"  Time range: {df['DateTime'].min()} ~ {df['DateTime'].max()}")
         return df
         
     except Exception as e:
@@ -287,7 +349,7 @@ def fetch_combined_aemo_data(log_callback=None):
     now = get_sydney_now()
     # Remove timezone info for comparison with AEMO data (which is timezone-naive but in AEST/AEDT)
     now_naive = now.replace(tzinfo=None)
-    log(f"Current time: {now.strftime('%Y-%m-%d %H:%M:%S')}")
+    log(f"Current time (Sydney): {now.strftime('%Y-%m-%d %H:%M:%S')}")
     
     # Get latest forecast
     log("\n[1/2] Fetching latest forecast data...")
@@ -295,17 +357,35 @@ def fetch_combined_aemo_data(log_callback=None):
     if df_latest is None:
         return None, None
     
-    # Get historical forecast
-    log("\n[2/2] Fetching historical forecast data...")
-    df_earlier = fetch_aemo_earlier_predispatch(log_callback)
+    log(f"  Latest data range: {df_latest['DateTime'].min()} ~ {df_latest['DateTime'].max()}")
+    
+    # Determine if we need historical data
+    today_start = datetime.combine(now_naive.date(), datetime.min.time())
+    earliest_latest = df_latest['DateTime'].min()
+    
+    # Check if latest file already covers today from the start
+    needs_historical = earliest_latest > today_start + timedelta(hours=1)
+    
+    df_earlier = None
+    if needs_historical:
+        log("\n[2/2] Fetching historical forecast data...")
+        log(f"  Need data from: {today_start}")
+        # Target: find a file that covers today's start
+        df_earlier = fetch_aemo_earlier_predispatch(today_start, log_callback)
+    else:
+        log("\n[2/2] Latest file already covers today's start - skipping historical fetch")
     
     # Merge data
     log("\nMerging data...")
     if df_earlier is not None and len(df_earlier) > 0:
         df_combined = pd.concat([df_earlier, df_latest], ignore_index=True)
+        # Keep latest data when duplicates (more accurate)
         df_combined = df_combined.drop_duplicates(subset=['DateTime'], keep='last')
+        log(f"  Combined {len(df_earlier)} historical + {len(df_latest)} latest records")
     else:
         df_combined = df_latest.copy()
+        if needs_historical:
+            log("  Warning: Could not fetch historical data, using latest only")
     
     df_combined = df_combined.sort_values('DateTime').reset_index(drop=True)
     
@@ -327,11 +407,18 @@ def fetch_combined_aemo_data(log_callback=None):
     # Analysis
     historical_count = len(df_two_days[df_two_days['Type'] == 'historical'])
     forecast_count = len(df_two_days[df_two_days['Type'] == 'forecast'])
+    total_hours = len(df_two_days) * 0.5  # 30-min intervals
     
-    log(f"\nData statistics:")
+    log(f"\n✓ Final data statistics:")
     log(f"  Historical: {historical_count} records")
     log(f"  Forecast: {forecast_count} records")
+    log(f"  Total: {len(df_two_days)} records ({total_hours:.1f} hours)")
     log(f"  Time range: {df_two_days['DateTime'].min()} ~ {df_two_days['DateTime'].max()}")
+    
+    # Warning if data seems incomplete
+    if total_hours < 40:
+        log(f"\n⚠ Warning: Data coverage ({total_hours:.1f}h) is less than expected 48h")
+        log("  Optimization will still run with available data")
     
     return df_two_days[['DateTime', 'Price', 'Type']], now_naive
 
