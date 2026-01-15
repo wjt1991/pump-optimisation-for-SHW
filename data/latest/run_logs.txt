@@ -1,23 +1,34 @@
-Current time (Sydney): 2026-01-16 01:21:26
+Current time (Sydney): 2026-01-16 02:21:25
 
 [1/2] Fetching latest forecast data...
 Accessing AEMO NEMWEB...
 Found 672 files
-Downloading: PUBLIC_PREDISPATCHIS_202601160030_20260116000248.zip
-Successfully fetched 56 records
-  Latest data range: 2026-01-16 00:30:00 ~ 2026-01-17 04:00:00
+Downloading: PUBLIC_PREDISPATCHIS_202601160130_20260116010235.zip
+Successfully fetched 54 records
+  Latest data range: 2026-01-16 01:30:00 ~ 2026-01-17 04:00:00
 
-[2/2] Latest file already covers today's start - skipping historical fetch
+[2/2] Fetching historical forecast data...
+  Need to fill gap: 2026-01-16 00:00:00 ~ 2026-01-16 02:21:25.077652
+Found 672 files on server
+  Earliest: 2026-01-02 02:00:00
+  Latest: 2026-01-16 01:30:00
+  Looking for file to cover: 2026-01-16 00:00:00 ~ 2026-01-16 02:21:25.077652
+Selected: PUBLIC_PREDISPATCHIS_202601152300_20260115223301.zip
+  Target time: 2026-01-15 23:00:00
+  Forecast covers until: ~2026-01-17 15:00:00
+Fetched 59 records from historical file
+  Time range: 2026-01-15 23:00:00 ~ 2026-01-17 04:00:00
 
 Merging data...
+  Combined 59 historical + 54 latest records
 
 ✓ Final data statistics:
-  Historical: 2 records
-  Forecast: 54 records
-  Total: 56 records (28.0 hours)
-  Time range: 2026-01-16 00:30:00 ~ 2026-01-17 04:00:00
+  Historical: 5 records
+  Forecast: 52 records
+  Total: 57 records (28.5 hours)
+  Time range: 2026-01-16 00:00:00 ~ 2026-01-17 04:00:00
 
-⚠ Warning: Data coverage (28.0h) is less than expected 48h
+⚠ Warning: Data coverage (28.5h) is less than expected 48h
   Optimization will still run with available data
 Daily targets (sample): {'2026-01-16': 60.0, '2026-01-17': 45.0}
 Starting optimization...
@@ -25,7 +36,7 @@ Time interval: 30 minutes
 Total 2 days of data
 ⚠ Removing 2026-01-17: Only 4.5h data (4.5h usable), need 6.0h minimum
 Removing 1 incomplete day(s) from optimization
-Remaining: 1 day(s), 47 time steps (23.5h)
+Remaining: 1 day(s), 48 time steps (24.0h)
 Restricted slots: 8
 Building optimization model...
   2026-01-16: Target = 60.0 ML
