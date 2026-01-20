@@ -1,4 +1,4 @@
-Current time (Sydney): 2026-01-21 10:19:19
+Current time (Sydney): 2026-01-21 10:29:52
 
 [1/2] Fetching latest forecast data...
 Accessing AEMO NEMWEB...
@@ -8,11 +8,11 @@ Successfully fetched 38 records
   Latest data range: 2026-01-21 09:30:00 ~ 2026-01-22 04:00:00
 
 [2/2] Fetching historical forecast data...
-  Need to fill gap: 2026-01-21 00:00:00 ~ 2026-01-21 10:19:19.140873
+  Need to fill gap: 2026-01-21 00:00:00 ~ 2026-01-21 10:29:52.054619
 Found 672 files on server
   Earliest: 2026-01-07 10:00:00
   Latest: 2026-01-21 09:30:00
-  Looking for file to cover: 2026-01-21 00:00:00 ~ 2026-01-21 10:19:19.140873
+  Looking for file to cover: 2026-01-21 00:00:00 ~ 2026-01-21 10:29:52.054619
 Selected: PUBLIC_PREDISPATCHIS_202601202300_20260120223258.zip
   Target time: 2026-01-20 23:00:00
   Forecast covers until: ~2026-01-22 15:00:00
