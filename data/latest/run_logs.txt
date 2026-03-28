@@ -1,18 +1,18 @@
-Current time (Sydney): 2026-03-28 18:36:19
+Current time (Sydney): 2026-03-28 23:25:38
 
 [1/2] Fetching latest forecast data...
 Accessing AEMO NEMWEB...
-Found 673 files
-Downloading: PUBLIC_PREDISPATCHIS_202603281800_20260328173225.zip
-Successfully fetched 69 records
-  Latest data range: 2026-03-28 18:00:00 ~ 2026-03-30 04:00:00
+Found 672 files
+Downloading: PUBLIC_PREDISPATCHIS_202603282230_20260328220217.zip
+Successfully fetched 60 records
+  Latest data range: 2026-03-28 22:30:00 ~ 2026-03-30 04:00:00
 
 [2/2] Fetching historical forecast data...
-  Need to fill gap: 2026-03-28 00:00:00 ~ 2026-03-28 18:36:19.919894
-Found 673 files on server
-  Earliest: 2026-03-14 18:00:00
-  Latest: 2026-03-28 18:00:00
-  Looking for file to cover: 2026-03-28 00:00:00 ~ 2026-03-28 18:36:19.919894
+  Need to fill gap: 2026-03-28 00:00:00 ~ 2026-03-28 23:25:38.625521
+Found 672 files on server
+  Earliest: 2026-03-14 23:00:00
+  Latest: 2026-03-28 22:30:00
+  Looking for file to cover: 2026-03-28 00:00:00 ~ 2026-03-28 23:25:38.625521
 Selected: PUBLIC_PREDISPATCHIS_202603272300_20260327223215.zip
   Target time: 2026-03-27 23:00:00
   Forecast covers until: ~2026-03-29 15:00:00
@@ -20,11 +20,11 @@ Fetched 59 records from historical file
   Time range: 2026-03-27 23:00:00 ~ 2026-03-29 04:00:00
 
 Merging data...
-  Combined 59 historical + 69 latest records
+  Combined 59 historical + 60 latest records
 
 ✓ Final data statistics:
-  Historical: 38 records
-  Forecast: 58 records
+  Historical: 47 records
+  Forecast: 49 records
   Total: 96 records (48.0 hours)
   Time range: 2026-03-28 00:00:00 ~ 2026-03-29 23:30:00
 Daily targets (sample): {'2026-03-28': 60.0, '2026-03-29': 45.0}
