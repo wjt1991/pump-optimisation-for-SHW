@@ -1,33 +1,39 @@
-Current time (Sydney): 2026-06-10 00:11:56
+Current time (Sydney): 2026-06-10 20:45:00
 
 [1/2] Fetching latest forecast data...
 Accessing AEMO NEMWEB...
 Found 672 files
-Downloading: PUBLIC_PREDISPATCHIS_202606100030_20260610000209.zip
-Successfully fetched 56 records
-  Latest data range: 2026-06-10 00:30:00 ~ 2026-06-11 04:00:00
+Downloading: PUBLIC_PREDISPATCHIS_202606102100_20260610203208.zip
+Successfully fetched 63 records
+  Latest data range: 2026-06-10 21:00:00 ~ 2026-06-12 04:00:00
 
-[2/2] Latest file already covers today's start - skipping historical fetch
+[2/2] Fetching historical forecast data...
+  Need to fill gap: 2026-06-10 00:00:00 ~ 2026-06-10 20:45:00.336367
+Found 672 files on server
+  Earliest: 2026-05-27 21:30:00
+  Latest: 2026-06-10 21:00:00
+  Looking for file to cover: 2026-06-10 00:00:00 ~ 2026-06-10 20:45:00.336367
+Selected: PUBLIC_PREDISPATCHIS_202606092300_20260609223220.zip
+  Target time: 2026-06-09 23:00:00
+  Forecast covers until: ~2026-06-11 15:00:00
+Fetched 59 records from historical file
+  Time range: 2026-06-09 23:00:00 ~ 2026-06-11 04:00:00
 
 Merging data...
+  Combined 59 historical + 63 latest records
 
 ✓ Final data statistics:
-  Historical: 0 records
-  Forecast: 56 records
-  Total: 56 records (28.0 hours)
-  Time range: 2026-06-10 00:30:00 ~ 2026-06-11 04:00:00
-
-⚠ Warning: Data coverage (28.0h) is less than expected 48h
-  Optimization will still run with available data
+  Historical: 42 records
+  Forecast: 54 records
+  Total: 96 records (48.0 hours)
+  Time range: 2026-06-10 00:00:00 ~ 2026-06-11 23:30:00
 Daily targets (sample): {'2026-06-10': 60.0, '2026-06-11': 45.0}
 Starting optimization...
 Time interval: 30 minutes
 Total 2 days of data
-⚠ Removing 2026-06-11: Only 4.5h data (4.5h usable), need 6.0h minimum
-Removing 1 incomplete day(s) from optimization
-Remaining: 1 day(s), 47 time steps (23.5h)
-Restricted slots: 8
+Restricted slots: 16
 Building optimization model...
   2026-06-10: Target = 60.0 ML
+  2026-06-11: Target = 45.0 ML
 Solving...
 Solution found!
