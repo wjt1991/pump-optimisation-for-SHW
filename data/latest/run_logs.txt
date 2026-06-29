@@ -1,39 +1,44 @@
-Current time (Sydney): 2026-06-29 21:50:49
+Current time (Sydney): 2026-06-30 01:22:18
 
 [1/2] Fetching latest forecast data...
 Accessing AEMO NEMWEB...
 Found 672 files
-Downloading: PUBLIC_PREDISPATCHIS_202606292200_20260629213204.zip
-Successfully fetched 61 records
-  Latest data range: 2026-06-29 22:00:00 ~ 2026-07-01 04:00:00
+Downloading: PUBLIC_PREDISPATCHIS_202606300130_20260630010153.zip
+Successfully fetched 54 records
+  Latest data range: 2026-06-30 01:30:00 ~ 2026-07-01 04:00:00
 
 [2/2] Fetching historical forecast data...
-  Need to fill gap: 2026-06-29 00:00:00 ~ 2026-06-29 21:50:49.489931
+  Need to fill gap: 2026-06-30 00:00:00 ~ 2026-06-30 01:22:18.374774
 Found 672 files on server
-  Earliest: 2026-06-15 22:30:00
-  Latest: 2026-06-29 22:00:00
-  Looking for file to cover: 2026-06-29 00:00:00 ~ 2026-06-29 21:50:49.489931
-Selected: PUBLIC_PREDISPATCHIS_202606282300_20260628223158.zip
-  Target time: 2026-06-28 23:00:00
-  Forecast covers until: ~2026-06-30 15:00:00
+  Earliest: 2026-06-16 02:00:00
+  Latest: 2026-06-30 01:30:00
+  Looking for file to cover: 2026-06-30 00:00:00 ~ 2026-06-30 01:22:18.374774
+Selected: PUBLIC_PREDISPATCHIS_202606292300_20260629223150.zip
+  Target time: 2026-06-29 23:00:00
+  Forecast covers until: ~2026-07-01 15:00:00
 Fetched 59 records from historical file
-  Time range: 2026-06-28 23:00:00 ~ 2026-06-30 04:00:00
+  Time range: 2026-06-29 23:00:00 ~ 2026-07-01 04:00:00
 
 Merging data...
-  Combined 59 historical + 61 latest records
+  Combined 59 historical + 54 latest records
 
 ✓ Final data statistics:
-  Historical: 44 records
-  Forecast: 52 records
-  Total: 96 records (48.0 hours)
-  Time range: 2026-06-29 00:00:00 ~ 2026-06-30 23:30:00
-Daily targets (sample): {'2026-06-29': 60.0, '2026-06-30': 45.0}
+  Historical: 3 records
+  Forecast: 54 records
+  Total: 57 records (28.5 hours)
+  Time range: 2026-06-30 00:00:00 ~ 2026-07-01 04:00:00
+
+⚠ Warning: Data coverage (28.5h) is less than expected 48h
+  Optimization will still run with available data
+Daily targets (sample): {'2026-06-30': 60.0, '2026-07-01': 45.0}
 Starting optimization...
 Time interval: 30 minutes
 Total 2 days of data
-Restricted slots: 16
+⚠ Removing 2026-07-01: Only 4.5h data (4.5h usable), need 6.0h minimum
+Removing 1 incomplete day(s) from optimization
+Remaining: 1 day(s), 48 time steps (24.0h)
+Restricted slots: 8
 Building optimization model...
-  2026-06-29: Target = 60.0 ML
-  2026-06-30: Target = 45.0 ML
+  2026-06-30: Target = 60.0 ML
 Solving...
 Solution found!
