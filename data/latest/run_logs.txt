@@ -1,39 +1,39 @@
-Current time (Sydney): 2026-07-20 23:40:01
+Current time (Sydney): 2026-07-21 19:19:41
 
 [1/2] Fetching latest forecast data...
 Accessing AEMO NEMWEB...
-Found 673 files
-Downloading: PUBLIC_PREDISPATCHIS_202607210000_20260720233149.zip
-Successfully fetched 57 records
-  Latest data range: 2026-07-21 00:00:00 ~ 2026-07-22 04:00:00
+Found 672 files
+Downloading: PUBLIC_PREDISPATCHIS_202607211930_20260721190152.zip
+Successfully fetched 66 records
+  Latest data range: 2026-07-21 19:30:00 ~ 2026-07-23 04:00:00
 
 [2/2] Fetching historical forecast data...
-  Need to fill gap: 2026-07-20 00:00:00 ~ 2026-07-20 23:40:01.478778
-Found 673 files on server
-  Earliest: 2026-07-07 00:00:00
-  Latest: 2026-07-21 00:00:00
-  Looking for file to cover: 2026-07-20 00:00:00 ~ 2026-07-20 23:40:01.478778
-Selected: PUBLIC_PREDISPATCHIS_202607192300_20260719223142.zip
-  Target time: 2026-07-19 23:00:00
-  Forecast covers until: ~2026-07-21 15:00:00
+  Need to fill gap: 2026-07-21 00:00:00 ~ 2026-07-21 19:19:41.608352
+Found 672 files on server
+  Earliest: 2026-07-07 20:00:00
+  Latest: 2026-07-21 19:30:00
+  Looking for file to cover: 2026-07-21 00:00:00 ~ 2026-07-21 19:19:41.608352
+Selected: PUBLIC_PREDISPATCHIS_202607202300_20260720223147.zip
+  Target time: 2026-07-20 23:00:00
+  Forecast covers until: ~2026-07-22 15:00:00
 Fetched 59 records from historical file
-  Time range: 2026-07-19 23:00:00 ~ 2026-07-21 04:00:00
+  Time range: 2026-07-20 23:00:00 ~ 2026-07-22 04:00:00
 
 Merging data...
-  Combined 59 historical + 57 latest records
+  Combined 59 historical + 66 latest records
 
 ✓ Final data statistics:
-  Historical: 48 records
-  Forecast: 48 records
+  Historical: 39 records
+  Forecast: 57 records
   Total: 96 records (48.0 hours)
-  Time range: 2026-07-20 00:00:00 ~ 2026-07-21 23:30:00
-Daily targets (sample): {'2026-07-20': 60.0, '2026-07-21': 45.0}
+  Time range: 2026-07-21 00:00:00 ~ 2026-07-22 23:30:00
+Daily targets (sample): {'2026-07-21': 60.0, '2026-07-22': 45.0}
 Starting optimization...
 Time interval: 30 minutes
 Total 2 days of data
 Restricted slots: 16
 Building optimization model...
-  2026-07-20: Target = 60.0 ML
-  2026-07-21: Target = 45.0 ML
+  2026-07-21: Target = 60.0 ML
+  2026-07-22: Target = 45.0 ML
 Solving...
 Solution found!
